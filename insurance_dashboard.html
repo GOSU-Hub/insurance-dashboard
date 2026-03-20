@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แดชบอร์ดกรมธรรม์ประกัน</title>
+<style>
+  /* ── reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #f7f6f3;
+    --surface:   #ffffff;
+    --border:    rgba(0,0,0,0.10);
+    --border-md: rgba(0,0,0,0.18);
+    --text:      #1a1a18;
+    --muted:     #6b6b67;
+    --hint:      #a0a09b;
+    --accent:    #1a1a18;
+    --success:   #3B6D11; --success-bg: #EAF3DE;
+    --warning:   #854F0B; --warning-bg: #FAEEDA;
+    --danger:    #791F1F; --danger-bg:  #FCEBEB;
+    --info:      #185FA5; --info-bg:    #E6F1FB;
+    --radius:    10px;
+    --radius-lg: 14px;
+  }
+  body { font-family: 'Sarabun', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+  a { color: var(--info); }
+
+  /* ── layout ── */
+  .app { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem; }
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 12px; }
+  .topbar-title { font-size: 22px; font-weight: 600; }
+  .topbar-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* ── setup banner ── */
+  .setup-banner {
+    background: var(--info-bg); border: 1px solid rgba(24,95,165,0.2);
+    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+  }
+  .setup-banner h3 { font-size: 14px; font-weight: 600; color: var(--info); margin-bottom: 8px; }
+  .setup-banner ol { padding-left: 1.25rem; font-size: 13px; color: var(--info); line-height: 2; }
+  .setup-banner code { background: rgba(24,95,165,0.12); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+  .url-row { display: flex; gap: 8px; margin-top: 10px; }
+  .url-input { flex: 1; padding: 8px 10px; border: 1px solid rgba(24,95,165,0.3); border-radius: var(--radius); font-size: 13px; background: white; color: var(--text); }
+  .url-input:focus { outline: none; border-color: var(--info); }
+
+  /* ── buttons ── */
+  .btn { padding: 8px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: opacity .15s, transform .1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-outline { background: transparent; border: 1px solid var(--border-md); color: var(--muted); }
+  .btn-outline:hover { background: var(--bg); color: var(--text); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-danger { background: var(--danger-bg); color: var(--danger); border: none; }
+
+  /* ── metrics ── */
+  .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .metric { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.1rem; }
+  .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .metric-val { font-size: 24px; font-weight: 600; }
+  .metric-sub { font-size: 11px; color: var(--hint); margin-top: 4px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 100px; margin-top: 5px; }
+  .badge-success { background: var(--success-bg); color: var(--success); }
+  .badge-warning { background: var(--warning-bg); color: var(--warning); }
+  .badge-danger  { background: var(--danger-bg);  color: var(--danger); }
+  .badge-info    { background: var(--info-bg);    color: var(--info); }
+
+  /* ── main grid ── */
+  .main-grid { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 1rem; }
+
+  /* ── filters ── */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filter-btn { padding: 5px 14px; border-radius: 100px; border: 1px solid var(--border-md); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* ── policy table ── */
+  .policy-list { display: flex; flex-direction: column; gap: 8px; }
+  .policy-row {
+    display: grid; grid-template-columns: 38px 1fr auto auto auto;
+    align-items: center; gap: 12px; padding: 11px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    cursor: pointer; transition: border-color .15s;
+  }
+  .policy-row:hover { border-color: var(--border-md); }
+  .policy-icon { width: 38px; height: 38px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .icon-life   { background: #E6F1FB; }
+  .icon-health { background: #EAF3DE; }
+  .icon-auto   { background: #FAEEDA; }
+  .icon-home   { background: #EEEDFE; }
+  .icon-travel { background: #E1F5EE; }
+  .policy-name { font-size: 13px; font-weight: 600; }
+  .policy-company { font-size: 12px; color: var(--muted); }
+  .col-amount { text-align: right; }
+  .policy-amount { font-size: 13px; font-weight: 600; }
+  .policy-freq { font-size: 11px; color: var(--hint); }
+  .policy-exp { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-active   { background: #639922; } .text-active   { color: #3B6D11; }
+  .dot-expiring { background: #BA7517; } .text-expiring { color: #854F0B; }
+  .dot-expired  { background: #A32D2D; } .text-expired  { color: #791F1F; }
+  .status-text { font-size: 12px; }
+  .empty { text-align: center; padding: 2.5rem; color: var(--hint); font-size: 13px; }
+
+  /* ── side ── */
+  .side-col { display: flex; flex-direction: column; gap: 14px; }
+  .upcoming-list { display: flex; flex-direction: column; gap: 10px; }
+  .upcoming-item { display: flex; gap: 10px; align-items: flex-start; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .upcoming-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .up-date-box { min-width: 38px; text-align: center; background: var(--bg); border-radius: var(--radius); padding: 4px 6px; }
+  .up-month { font-size: 10px; color: var(--muted); }
+  .up-day   { font-size: 16px; font-weight: 600; line-height: 1.2; }
+  .up-name  { font-size: 13px; font-weight: 500; }
+  .up-amt   { font-size: 12px; color: var(--muted); }
+
+  /* ── drawer ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 9; }
+  .overlay.open { display: block; }
+  .drawer {
+    position: fixed; right: -400px; top: 0; bottom: 0; width: 360px;
+    background: var(--surface); border-left: 1px solid var(--border);
+    padding: 1.5rem; overflow-y: auto; z-index: 10;
+    transition: right .25s ease;
+  }
+  .drawer.open { right: 0; }
+  .drawer-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .close-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); border: none; cursor: pointer; font-size: 16px; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+  .det-icon { width: 50px; height: 50px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 8px; }
+  .det-name { font-size: 17px; font-weight: 600; }
+  .det-company { font-size: 13px; color: var(--muted); }
+  .det-section { margin-top: 1.25rem; }
+  .det-section-title { font-size: 11px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .det-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .det-row:last-child { border-bottom: none; }
+  .det-key { color: var(--muted); }
+  .det-val { font-weight: 500; }
+  .det-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
+  .det-actions .btn { flex: 1; text-align: center; }
+
+  /* ── modal (add/edit form) ── */
+  .modal-wrap { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 20; align-items: center; justify-content: center; }
+  .modal-wrap.open { display: flex; }
+  .modal { background: white; border-radius: var(--radius-lg); padding: 1.5rem; width: 560px; max-width: 96vw; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 1.25rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field input, .field select, .field textarea {
+    padding: 8px 10px; border: 1px solid var(--border-md); border-radius: var(--radius);
+    font-size: 13px; font-family: inherit; background: white; color: var(--text); width: 100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #378ADD; }
+  .field textarea { min-height: 64px; resize: vertical; }
+  .required { color: #E24B4A; margin-left: 2px; }
+  .toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .toggle-btn { padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border-md); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .toggle-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+
+  /* ── loading/error ── */
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--accent); color: white; padding: 10px 18px; border-radius: var(--radius); font-size: 13px; z-index: 99; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 700px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .main-grid { grid-template-columns: 1fr; }
+    .policy-row { grid-template-columns: 38px 1fr auto; }
+    .policy-exp, .policy-freq { display: none; }
+    .drawer { width: 100%; right: -100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- setup banner -->
+  <div class="setup-banner" id="setupBanner">
+    <h3>⚙️ ตั้งค่าการเชื่อมต่อ Google Sheets</h3>
+    <ol>
+      <li>ไปที่ <a href="https://sheets.google.com" target="_blank">Google Sheets</a> → สร้าง Spreadsheet ใหม่</li>
+      <li>เปิด <strong>Extensions → Apps Script</strong> → วางโค้ดจากไฟล์ <code>Code.gs</code> ที่แนบมา</li>
+      <li>กด <strong>Deploy → New deployment → Web app</strong></li>
+      <li>ตั้ง <em>Execute as: Me</em> และ <em>Who has access: Anyone</em> แล้วกด Deploy</li>
+      <li>คัดลอก <strong>Web app URL</strong> มาวางด้านล่าง แล้วกด บันทึก</li>
+    </ol>
+    <div class="url-row">
+      <input type="url" class="url-input" id="scriptUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
+      <button class="btn btn-primary btn-sm" onclick="saveUrl()">บันทึก URL</button>
+    </div>
+  </div>
+
+  <!-- topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">กรมธรรม์ประกันของฉัน</div>
+      <div class="topbar-sub" id="lastSync">ยังไม่ได้เชื่อมต่อ</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-outline btn-sm" onclick="loadPolicies()" id="syncBtn">↻ รีเฟรช</button>
+      <button class="btn btn-primary" onclick="openModal()">+ เพิ่มกรมธรรม์</button>
+    </div>
+  </div>
+
+  <!-- metrics -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">กรมธรรม์ทั้งหมด</div>
+      <div class="metric-val" id="mTotal">—</div>
+      <div class="metric-sub" id="mActive"></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">เบี้ยประกันรายปี</div>
+      <div class="metric-val" id="mPremium">—</div>
+      <div class="metric-sub" id="mPremiumSub"></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">ทุนประกันรวม</div>
+      <div class="metric-val" id="mCoverage">—</div>
+      <div class="badge badge-info" style="margin-top:5px;">ประกันชีวิต</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">ใกล้หมดอายุ</div>
+      <div class="metric-val" id="mExpiring">—</div>
+      <div class="badge badge-warning" id="mExpiringBadge">ใน 60 วัน</div>
+    </div>
+  </div>
+
+  <!-- main grid -->
+  <div class="main-grid">
+    <!-- policy list -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="card-title" style="margin:0;">รายการกรมธรรม์</div>
+        <div id="loadingSpinner" style="display:none;"><div class="spinner"></div></div>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterBy('all',this)">ทั้งหมด</button>
+        <button class="filter-btn" onclick="filterBy('life',this)">ชีวิต</button>
+        <button class="filter-btn" onclick="filterBy('health',this)">สุขภาพ</button>
+        <button class="filter-btn" onclick="filterBy('auto',this)">รถยนต์</button>
+        <button class="filter-btn" onclick="filterBy('home',this)">บ้าน</button>
+        <button class="filter-btn" onclick="filterBy('travel',this)">เดินทาง</button>
+      </div>
+      <div class="policy-list" id="policyList">
+        <div class="empty">กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- side -->
+    <div class="side-col">
+      <div class="card">
+        <div class="card-title">ชำระเบี้ยที่กำลังจะมาถึง</div>
+        <div class="upcoming-list" id="upcomingList">
+          <div class="empty" style="padding:1rem 0;">ยังไม่มีข้อมูล</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">สรุปตามประเภท</div>
+        <div id="typeBreakdown" style="font-size:13px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- drawer detail -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div></div>
+    <button class="close-btn" onclick="closeDrawer()">✕</button>
+  </div>
+  <div id="drawerContent"></div>
+</div>
+
+<!-- modal add/edit -->
+<div class="modal-wrap" id="modalWrap">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">เพิ่มกรมธรรม์ใหม่</div>
+    <input type="hidden" id="editId">
+    <div class="form-grid">
+      <div class="field form-full">
+        <label>ชื่อแผนประกัน <span class="required">*</span></label>
+        <input type="text" id="fName" placeholder="เช่น ประกันชีวิต AIA Signature">
+      </div>
+      <div class="field">
+        <label>บริษัทประกัน <span class="required">*</span></label>
+        <select id="fCompany">
+          <option value="">เลือกบริษัท...</option>
+          <option>AIA Thailand</option><option>ไทยประกันชีวิต</option>
+          <option>กรุงเทพประกันชีวิต</option><option>เมืองไทยประกันชีวิต</option>
+          <option>Allianz Ayudhya</option><option>FWD Thailand</option>
+          <option>Prudential Thailand</option><option>SCB Life</option>
+          <option>วิริยะประกันภัย</option><option>เมืองไทยประกันภัย</option>
+          <option>Cigna Thailand</option><option>AXA Thailand</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>เลขกรมธรรม์ <span class="required">*</span></label>
+        <input type="text" id="fPolicyNo" placeholder="เช่น AIA-TH-2025-00001">
+      </div>
+      <div class="field">
+        <label>ประเภทประกัน</label>
+        <select id="fType">
+          <option value="life">ชีวิต</option>
+          <option value="health">สุขภาพ</option>
+          <option value="auto">รถยนต์</option>
+          <option value="home">บ้าน</option>
+          <option value="travel">เดินทาง</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ประเภทย่อย</label>
+        <select id="fSubType">
+          <option>ตลอดชีพ</option><option>สะสมทรัพย์</option>
+          <option>ชั่วระยะเวลา</option><option>บำนาญ</option>
+          <option>สุขภาพ OPD/IPD</option><option>โรคร้ายแรง</option>
+          <option>ชั้น 1</option><option>ชั้น 2+</option><option>ชั้น 3</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>วันที่เริ่มคุ้มครอง <span class="required">*</span></label>
+        <input type="date" id="fStart">
+      </div>
+      <div class="field">
+        <label>วันหมดอายุ <span class="required">*</span></label>
+        <input type="date" id="fEnd">
+      </div>
+      <div class="field">
+        <label>เบี้ยประกัน (บาท) <span class="required">*</span></label>
+        <input type="number" id="fPremium" placeholder="18000" min="0">
+      </div>
+      <div class="field">
+        <label>งวดชำระ</label>
+        <select id="fFreq">
+          <option value="ปี">รายปี</option>
+          <option value="6 เดือน">ราย 6 เดือน</option>
+          <option value="ไตรมาส">รายไตรมาส</option>
+          <option value="เดือน">รายเดือน</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ทุนประกัน (บาท)</label>
+        <input type="number" id="fCoverage" placeholder="1000000" min="0">
+      </div>
+      <div class="field">
+        <label>ความคุ้มครองเสริม</label>
+        <div class="toggle-group" id="fRiders">
+          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">ทุพพลภาพ</button>
+          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">โรคร้ายแรง</button>
+          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">อุบัติเหตุ</button>
+          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">สุขภาพ</button>
+        </div>
+      </div>
+      <div class="field form-full" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+        <label style="font-weight:600;font-size:13px;color:var(--text);">ผู้รับผลประโยชน์</label>
+      </div>
+      <div class="field">
+        <label>ชื่อ-นามสกุล</label>
+        <input type="text" id="fBName" placeholder="นางสมศรี มีทรัพย์">
+      </div>
+      <div class="field">
+        <label>ความสัมพันธ์</label>
+        <select id="fBRel">
+          <option value="">เลือก...</option>
+          <option>คู่สมรส</option><option>บิดา</option><option>มารดา</option>
+          <option>บุตร</option><option>พี่น้อง</option><option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>เบอร์โทรศัพท์</label>
+        <input type="tel" id="fBPhone" placeholder="0812345678">
+      </div>
+      <div class="field">
+        <label>สัดส่วนรับผลประโยชน์</label>
+        <select id="fBPct">
+          <option>100%</option><option>75%</option><option>50%</option>
+        </select>
+      </div>
+      <div class="field form-full">
+        <label>หมายเหตุ</label>
+        <textarea id="fNote" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitForm()" id="saveBtn">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const buddhistYear = d.getFullYear() + 543;
+  return `${d.getDate()} ${months[d.getMonth()]} ${buddhistYear}`;
+}
+
+const STORAGE_KEY = 'insurance_script_url';
+let scriptUrl = localStorage.getItem(STORAGE_KEY) || '';
+let allPolicies = [];
+let currentFilter = 'all';
+
+const typeMap = {
+  life:'ชีวิต', health:'สุขภาพ', auto:'รถยนต์', home:'บ้าน', travel:'เดินทาง'
+};
+const typeIcon = {
+  life:'🛡️', health:'🏥', auto:'🚗', home:'🏠', travel:'✈️'
+};
+const typeClass = {
+  life:'icon-life', health:'icon-health', auto:'icon-auto', home:'icon-home', travel:'icon-travel'
+};
+const freqMultiplier = { 'ปี':1, '6 เดือน':2, 'ไตรมาส':4, 'เดือน':12 };
+
+function saveUrl() {
+  const u = document.getElementById('scriptUrl').value.trim();
+  if (!u) { showToast('กรุณากรอก URL'); return; }
+  scriptUrl = u;
+  localStorage.setItem(STORAGE_KEY, u);
+  document.getElementById('setupBanner').style.display = 'none';
+  showToast('บันทึก URL สำเร็จ');
+  loadPolicies();
+}
+
+function api(params) {
+  if (!scriptUrl) { showToast('กรุณาตั้งค่า URL ก่อน'); return Promise.reject(); }
+  const url = scriptUrl + '?' + new URLSearchParams(params).toString();
+  return fetch(url).then(r => r.json());
+}
+
+async function loadPolicies() {
+  if (!scriptUrl) return;
+  document.getElementById('loadingSpinner').style.display = '';
+  try {
+    const res = await api({ action: 'getAll' });
+    if (res.success) {
+      allPolicies = res.policies;
+      renderAll();
+      const now = new Date().toLocaleString('th-TH');
+      document.getElementById('lastSync').textContent = 'ซิงค์ล่าสุด: ' + now;
+    } else {
+      showToast('โหลดข้อมูลไม่สำเร็จ: ' + res.error);
+    }
+  } catch(e) { showToast('เชื่อมต่อไม่ได้ ตรวจสอบ URL อีกครั้ง'); }
+  document.getElementById('loadingSpinner').style.display = 'none';
+}
+
+function renderAll() {
+  renderMetrics();
+  renderPolicies(currentFilter);
+  renderUpcoming();
+  renderBreakdown();
+}
+
+function renderMetrics() {
+  const active = allPolicies.filter(p => p.status === 'active').length;
+  const expiring = allPolicies.filter(p => p.status === 'expiring').length;
+  const totalPremium = allPolicies.reduce((s, p) => {
+    const m = freqMultiplier[p.frequency] || 1;
+    return s + (parseFloat(p.premium) || 0) * m;
+  }, 0);
+  const totalCoverage = allPolicies.filter(p => p.type === 'life')
+    .reduce((s, p) => s + (parseFloat(p.coverage) || 0), 0);
+
+  document.getElementById('mTotal').textContent = allPolicies.length;
+  document.getElementById('mActive').textContent = active + ' ใช้งานอยู่';
+  document.getElementById('mPremium').textContent = '฿' + Math.round(totalPremium).toLocaleString('th-TH');
+  document.getElementById('mPremiumSub').textContent = 'เฉลี่ย ฿' + Math.round(totalPremium / 12).toLocaleString('th-TH') + '/เดือน';
+  document.getElementById('mCoverage').textContent = totalCoverage >= 1e6
+    ? '฿' + (totalCoverage / 1e6).toFixed(1) + 'ล.'
+    : '฿' + Math.round(totalCoverage).toLocaleString('th-TH');
+  document.getElementById('mExpiring').textContent = expiring;
+}
+
+function renderPolicies(filter) {
+  const list = document.getElementById('policyList');
+  const filtered = filter === 'all' ? allPolicies : allPolicies.filter(p => p.type === filter);
+  if (!filtered.length) { list.innerHTML = '<div class="empty">ไม่มีกรมธรรม์ในหมวดนี้</div>'; return; }
+  list.innerHTML = filtered.map(p => {
+    const dotClass = { active:'dot-active', expiring:'dot-expiring', expired:'dot-expired' }[p.status] || 'dot-active';
+    const txtClass = { active:'text-active', expiring:'text-expiring', expired:'text-expired' }[p.status] || 'text-active';
+    const statusLabel = { active:'ใช้งานอยู่', expiring:'ใกล้หมดอายุ', expired:'หมดอายุ' }[p.status] || '';
+    const m = freqMultiplier[p.frequency] || 1;
+    const annual = Math.round((parseFloat(p.premium) || 0) * m).toLocaleString('th-TH');
+    const icon = typeIcon[p.type] || '📄';
+    const cls  = typeClass[p.type] || '';
+    return `<div class="policy-row" onclick="openDrawer('${p.id}')">
+      <div class="policy-icon ${cls}">${icon}</div>
+      <div>
+        <div class="policy-name">${p.name}</div>
+        <div class="policy-company">${p.company}</div>
+      </div>
+      <div class="col-amount">
+        <div class="policy-amount">฿${Number(p.premium).toLocaleString('th-TH')}</div>
+        <div class="policy-freq">/${p.frequency}</div>
+      </div>
+      <div class="policy-exp">หมดอายุ ${formatDate(p.endDate)}</div>
+      <div><span class="status-dot ${dotClass}"></span><span class="status-text ${txtClass}">${statusLabel}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderUpcoming() {
+  const sorted = [...allPolicies]
+    .filter(p => p.status !== 'expired')
+    .sort((a, b) => new Date(a.endDate) - new Date(b.endDate))
+    .slice(0, 4);
+  const el = document.getElementById('upcomingList');
+  if (!sorted.length) { el.innerHTML = '<div class="empty" style="padding:1rem 0;">ไม่มีรายการ</div>'; return; }
+  el.innerHTML = sorted.map(p => {
+    const d = new Date(p.endDate);
+    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];    return `<div class="upcoming-item">
+      <div class="up-date-box"><div class="up-month">${months[d.getMonth()]}</div><div class="up-day">${d.getDate()}</div></div>
+      <div><div class="up-name">${p.name}</div><div class="up-amt">฿${Number(p.premium).toLocaleString('th-TH')} · ${p.frequency}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderBreakdown() {
+  const counts = {};
+  allPolicies.forEach(p => { counts[p.type] = (counts[p.type] || 0) + 1; });
+  const el = document.getElementById('typeBreakdown');
+  el.innerHTML = Object.entries(counts).map(([t, c]) =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span>${typeIcon[t] || '📄'} ${typeMap[t] || t}</span>
+      <span style="font-weight:600;">${c} กรมธรรม์</span>
+    </div>`
+  ).join('') || '<div style="font-size:13px;color:var(--hint);padding:8px 0;">ยังไม่มีข้อมูล</div>';
+}
+
+function filterBy(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPolicies(type);
+}
+
+function openDrawer(id) {
+  const p = allPolicies.find(x => x.id === id);
+  if (!p) return;
+  const icon = typeIcon[p.type] || '📄';
+  const cls  = typeClass[p.type] || '';
+  const statusLabel = { active:'ใช้งานอยู่', expiring:'ใกล้หมดอายุ', expired:'หมดอายุ' }[p.status] || '';
+  const badgeCls = { active:'badge-success', expiring:'badge-warning', expired:'badge-danger' }[p.status] || 'badge-info';
+  const m = freqMultiplier[p.frequency] || 1;
+  const annual = Math.round((parseFloat(p.premium) || 0) * m).toLocaleString('th-TH');
+
+  document.getElementById('drawerContent').innerHTML = `
+    <div class="det-icon ${cls}">${icon}</div>
+    <div class="det-name">${p.name}</div>
+    <div class="det-company">${p.company}</div>
+    <div><span class="badge ${badgeCls}" style="margin-top:6px;">${statusLabel}</span></div>
+    <div class="det-section">
+      <div class="det-section-title">ข้อมูลกรมธรรม์</div>
+      <div class="det-row"><span class="det-key">เลขกรมธรรม์</span><span class="det-val">${p.policyNo}</span></div>
+      <div class="det-row"><span class="det-key">ประเภท</span><span class="det-val">${typeMap[p.type] || p.type} · ${p.subType || ''}</span></div>
+      <div class="det-row"><span class="det-key">เริ่มต้น</span><span class="det-val">${formatDate(p.startDate)}</span></div>
+      <div class="det-row"><span class="det-key">หมดอายุ</span><span class="det-val">${formatDate(p.endDate)}</span></div>
+      <div class="det-row"><span class="det-key">ทุนประกัน</span><span class="det-val">฿${Number(p.coverage||0).toLocaleString('th-TH')}</span></div>
+      <div class="det-row"><span class="det-key">ความคุ้มครองเสริม</span><span class="det-val">${p.riders || '-'}</span></div>
+    </div>
+    <div class="det-section">
+      <div class="det-section-title">เบี้ยประกัน</div>
+      <div class="det-row"><span class="det-key">เบี้ย</span><span class="det-val">฿${Number(p.premium).toLocaleString('th-TH')} / ${p.frequency}</span></div>
+      <div class="det-row"><span class="det-key">รายปีรวม</span><span class="det-val">฿${annual}</span></div>
+    </div>
+    <div class="det-section">
+      <div class="det-section-title">ผู้รับผลประโยชน์</div>
+      <div class="det-row"><span class="det-key">ชื่อ</span><span class="det-val">${p.beneficiaryName || '-'}</span></div>
+      <div class="det-row"><span class="det-key">ความสัมพันธ์</span><span class="det-val">${p.beneficiaryRel || '-'}</span></div>
+      <div class="det-row"><span class="det-key">สัดส่วน</span><span class="det-val">${p.beneficiaryPct || '-'}</span></div>
+    </div>
+    ${p.note ? `<div class="det-section"><div class="det-section-title">หมายเหตุ</div><div style="font-size:13px;color:var(--muted);padding:6px 0;">${p.note}</div></div>` : ''}
+    <div class="det-actions">
+      <button class="btn btn-outline btn-sm" onclick="editPolicy('${p.id}')">แก้ไข</button>
+      <button class="btn btn-danger btn-sm" onclick="deletePolicy('${p.id}')">ลบ</button>
+    </div>
+  `;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+
+function openModal(prefill) {
+  document.getElementById('modalTitle').textContent = prefill ? 'แก้ไขกรมธรรม์' : 'เพิ่มกรมธรรม์ใหม่';
+  document.getElementById('editId').value = prefill ? prefill.id : '';
+  const fields = ['fName','fCompany','fPolicyNo','fStart','fEnd','fPremium','fCoverage','fNote','fBName','fBPhone'];
+  const keys   = ['name','company','policyNo','startDate','endDate','premium','coverage','note','beneficiaryName','beneficiaryPhone'];
+  fields.forEach((f, i) => document.getElementById(f).value = prefill ? (prefill[keys[i]] || '') : '');
+  if (prefill) {
+    document.getElementById('fType').value = prefill.type || 'life';
+    document.getElementById('fFreq').value = prefill.frequency || 'ปี';
+    document.getElementById('fBRel').value = prefill.beneficiaryRel || '';
+    document.getElementById('fBPct').value = prefill.beneficiaryPct || '100%';
+  }
+  document.querySelectorAll('#fRiders .toggle-btn').forEach(b => {
+    b.classList.toggle('selected', prefill && (prefill.riders || '').includes(b.textContent));
+  });
+  document.getElementById('modalWrap').classList.add('open');
+}
+function closeModal() { document.getElementById('modalWrap').classList.remove('open'); }
+
+function editPolicy(id) {
+  const p = allPolicies.find(x => x.id === id);
+  if (p) { closeDrawer(); openModal(p); }
+}
+
+async function deletePolicy(id) {
+  if (!confirm('ต้องการลบกรมธรรม์นี้ใช่ไหม?')) return;
+  try {
+    const res = await api({ action: 'delete', id });
+    if (res.success) { showToast('ลบเรียบร้อย'); closeDrawer(); loadPolicies(); }
+    else showToast('ลบไม่สำเร็จ: ' + res.error);
+  } catch(e) { showToast('เกิดข้อผิดพลาด'); }
+}
+
+async function submitForm() {
+  const required = [
+    { id: 'fName', label: 'ชื่อแผนประกัน' },
+    { id: 'fCompany', label: 'บริษัทประกัน' },
+    { id: 'fPolicyNo', label: 'เลขกรมธรรม์' },
+    { id: 'fStart', label: 'วันที่เริ่มคุ้มครอง' },
+    { id: 'fEnd', label: 'วันหมดอายุ' },
+    { id: 'fPremium', label: 'เบี้ยประกัน' }
+  ];
+  for (const f of required) {
+    if (!document.getElementById(f.id).value) { showToast('กรุณากรอก: ' + f.label); return; }
+  }
+
+  const riders = Array.from(document.querySelectorAll('#fRiders .toggle-btn.selected')).map(b => b.textContent);
+  const data = {
+    name: document.getElementById('fName').value,
+    company: document.getElementById('fCompany').value,
+    policyNo: document.getElementById('fPolicyNo').value,
+    type: document.getElementById('fType').value,
+    subType: document.getElementById('fSubType').value,
+    startDate: document.getElementById('fStart').value,
+    endDate: document.getElementById('fEnd').value,
+    premium: document.getElementById('fPremium').value,
+    frequency: document.getElementById('fFreq').value,
+    coverage: document.getElementById('fCoverage').value,
+    riders,
+    beneficiaryName: document.getElementById('fBName').value,
+    beneficiaryRel: document.getElementById('fBRel').value,
+    beneficiaryPhone: document.getElementById('fBPhone').value,
+    beneficiaryPct: document.getElementById('fBPct').value,
+    note: document.getElementById('fNote').value,
+  };
+
+  const editId = document.getElementById('editId').value;
+  if (editId) data.id = editId;
+
+  document.getElementById('saveBtn').textContent = 'กำลังบันทึก...';
+  document.getElementById('saveBtn').disabled = true;
+  try {
+    const res = await api({ action: editId ? 'update' : 'add', data: JSON.stringify(data) });
+    if (res.success) {
+      showToast(editId ? 'อัปเดตสำเร็จ' : 'เพิ่มกรมธรรม์สำเร็จ');
+      closeModal(); loadPolicies();
+    } else showToast('บันทึกไม่สำเร็จ: ' + res.error);
+  } catch(e) { showToast('เกิดข้อผิดพลาด'); }
+  document.getElementById('saveBtn').textContent = 'บันทึก';
+  document.getElementById('saveBtn').disabled = false;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// init
+if (scriptUrl) {
+  document.getElementById('setupBanner').style.display = 'none';
+  document.getElementById('scriptUrl').value = scriptUrl;
+  loadPolicies();
+}
+</script>
+</body>
+</html>
