@@ -3,692 +3,1355 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>แดชบอร์ดกรมธรรม์ประกัน</title>
+<title>Insurance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ── reset & base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg:        #f7f6f3;
-    --surface:   #ffffff;
-    --border:    rgba(0,0,0,0.10);
-    --border-md: rgba(0,0,0,0.18);
-    --text:      #1a1a18;
-    --muted:     #6b6b67;
-    --hint:      #a0a09b;
-    --accent:    #1a1a18;
-    --success:   #3B6D11; --success-bg: #EAF3DE;
-    --warning:   #854F0B; --warning-bg: #FAEEDA;
-    --danger:    #791F1F; --danger-bg:  #FCEBEB;
-    --info:      #185FA5; --info-bg:    #E6F1FB;
-    --radius:    10px;
-    --radius-lg: 14px;
+    --bg: #0f0f11;
+    --bg-card: #18181c;
+    --bg-input: #222228;
+    --bg-hover: #25252c;
+    --border: #2e2e38;
+    --border-light: #3a3a48;
+    --text: #f0eff4;
+    --text-muted: #8b8a99;
+    --text-dim: #5a596a;
+    --accent: #a78bfa;
+    --accent-dim: #7c5fe6;
+    --accent-glow: rgba(167,139,250,0.15);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.15);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.15);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.15);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.15);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Sarabun', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --shadow: 0 2px 20px rgba(0,0,0,0.4);
   }
-  body { font-family: 'Sarabun', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
-  a { color: var(--info); }
 
-  /* ── layout ── */
-  .app { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem; }
-  .topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 12px; }
-  .topbar-title { font-size: 22px; font-weight: 600; }
-  .topbar-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── setup banner ── */
-  .setup-banner {
-    background: var(--info-bg); border: 1px solid rgba(24,95,165,0.2);
-    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
   }
-  .setup-banner h3 { font-size: 14px; font-weight: 600; color: var(--info); margin-bottom: 8px; }
-  .setup-banner ol { padding-left: 1.25rem; font-size: 13px; color: var(--info); line-height: 2; }
-  .setup-banner code { background: rgba(24,95,165,0.12); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
-  .url-row { display: flex; gap: 8px; margin-top: 10px; }
-  .url-input { flex: 1; padding: 8px 10px; border: 1px solid rgba(24,95,165,0.3); border-radius: var(--radius); font-size: 13px; background: white; color: var(--text); }
-  .url-input:focus { outline: none; border-color: var(--info); }
 
-  /* ── buttons ── */
-  .btn { padding: 8px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: opacity .15s, transform .1s; }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { opacity: .85; }
-  .btn-outline { background: transparent; border: 1px solid var(--border-md); color: var(--muted); }
-  .btn-outline:hover { background: var(--bg); color: var(--text); }
-  .btn-sm { padding: 5px 12px; font-size: 12px; }
-  .btn-danger { background: var(--danger-bg); color: var(--danger); border: none; }
+  /* ── Layout ── */
+  .shell { display: flex; min-height: 100vh; }
 
-  /* ── metrics ── */
-  .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
-  .metric { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.1rem; }
-  .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  .metric-val { font-size: 24px; font-weight: 600; }
-  .metric-sub { font-size: 11px; color: var(--hint); margin-top: 4px; }
-  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 100px; margin-top: 5px; }
-  .badge-success { background: var(--success-bg); color: var(--success); }
-  .badge-warning { background: var(--warning-bg); color: var(--warning); }
-  .badge-danger  { background: var(--danger-bg);  color: var(--danger); }
-  .badge-info    { background: var(--info-bg);    color: var(--info); }
-
-  /* ── main grid ── */
-  .main-grid { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
-  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 1rem; }
-
-  /* ── filters ── */
-  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .filter-btn { padding: 5px 14px; border-radius: 100px; border: 1px solid var(--border-md); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
-  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-  /* ── policy table ── */
-  .policy-list { display: flex; flex-direction: column; gap: 8px; }
-  .policy-row {
-    display: grid; grid-template-columns: 38px 1fr auto auto auto;
-    align-items: center; gap: 12px; padding: 11px 12px;
-    border: 1px solid var(--border); border-radius: var(--radius);
-    cursor: pointer; transition: border-color .15s;
+  .sidebar {
+    width: 240px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
   }
-  .policy-row:hover { border-color: var(--border-md); }
-  .policy-icon { width: 38px; height: 38px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-  .icon-life   { background: #E6F1FB; }
-  .icon-health { background: #EAF3DE; }
-  .icon-auto   { background: #FAEEDA; }
-  .icon-home   { background: #EEEDFE; }
-  .icon-travel { background: #E1F5EE; }
-  .policy-name { font-size: 13px; font-weight: 600; }
-  .policy-company { font-size: 12px; color: var(--muted); }
-  .col-amount { text-align: right; }
-  .policy-amount { font-size: 13px; font-weight: 600; }
-  .policy-freq { font-size: 11px; color: var(--hint); }
-  .policy-exp { font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-  .dot-active   { background: #639922; } .text-active   { color: #3B6D11; }
-  .dot-expiring { background: #BA7517; } .text-expiring { color: #854F0B; }
-  .dot-expired  { background: #A32D2D; } .text-expired  { color: #791F1F; }
-  .status-text { font-size: 12px; }
-  .empty { text-align: center; padding: 2.5rem; color: var(--hint); font-size: 13px; }
 
-  /* ── side ── */
-  .side-col { display: flex; flex-direction: column; gap: 14px; }
-  .upcoming-list { display: flex; flex-direction: column; gap: 10px; }
-  .upcoming-item { display: flex; gap: 10px; align-items: flex-start; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-  .upcoming-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .up-date-box { min-width: 38px; text-align: center; background: var(--bg); border-radius: var(--radius); padding: 4px 6px; }
-  .up-month { font-size: 10px; color: var(--muted); }
-  .up-day   { font-size: 16px; font-weight: 600; line-height: 1.2; }
-  .up-name  { font-size: 13px; font-weight: 500; }
-  .up-amt   { font-size: 12px; color: var(--muted); }
-
-  /* ── drawer ── */
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 9; }
-  .overlay.open { display: block; }
-  .drawer {
-    position: fixed; right: -400px; top: 0; bottom: 0; width: 360px;
-    background: var(--surface); border-left: 1px solid var(--border);
-    padding: 1.5rem; overflow-y: auto; z-index: 10;
-    transition: right .25s ease;
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
   }
-  .drawer.open { right: 0; }
-  .drawer-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-  .close-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); border: none; cursor: pointer; font-size: 16px; color: var(--muted); display: flex; align-items: center; justify-content: center; }
-  .det-icon { width: 50px; height: 50px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 8px; }
-  .det-name { font-size: 17px; font-weight: 600; }
-  .det-company { font-size: 13px; color: var(--muted); }
-  .det-section { margin-top: 1.25rem; }
-  .det-section-title { font-size: 11px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-  .det-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border); }
-  .det-row:last-child { border-bottom: none; }
-  .det-key { color: var(--muted); }
-  .det-val { font-weight: 500; }
-  .det-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
-  .det-actions .btn { flex: 1; text-align: center; }
 
-  /* ── modal (add/edit form) ── */
-  .modal-wrap { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 20; align-items: center; justify-content: center; }
-  .modal-wrap.open { display: flex; }
-  .modal { background: white; border-radius: var(--radius-lg); padding: 1.5rem; width: 560px; max-width: 96vw; max-height: 90vh; overflow-y: auto; }
-  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 1.25rem; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .logo-text { font-size: 13px; font-weight: 600; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    font-weight: 500;
+  }
+
+  .nav-item:hover { background: var(--bg-hover); color: var(--text); }
+  .nav-item.active { background: var(--accent-glow); color: var(--accent); border-color: rgba(167,139,250,0.25); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .api-config-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .api-config-btn:hover { border-color: var(--border-light); color: var(--text); }
+
+  .main { margin-left: 240px; flex: 1; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(15,15,17,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .page { padding: 28px; }
+
+  /* ── Badges / Chips ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-active { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-expiring { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-expired { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── Stat Cards ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border-light); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.c-purple::before { background: var(--accent); }
+  .stat-card.c-green::before { background: var(--green); }
+  .stat-card.c-amber::before { background: var(--amber); }
+  .stat-card.c-red::before { background: var(--red); }
+
+  .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 8px; }
+  .stat-val { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+  .stat-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .stat-icon { position: absolute; top: 18px; right: 18px; font-size: 22px; opacity: 0.25; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    font-family: var(--font);
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+
+  .btn-secondary {
+    background: var(--bg-card);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg-hover); border-color: var(--border-light); }
+
+  .btn-danger {
+    background: var(--red-dim);
+    color: var(--red);
+    border-color: rgba(248,113,113,0.3);
+  }
+  .btn-danger:hover { background: rgba(248,113,113,0.25); }
+
+  .btn-sm { padding: 5px 12px; font-size: 12.5px; }
+  .btn-icon { width: 34px; height: 34px; padding: 0; justify-content: center; border-radius: var(--radius-sm); }
+
+  /* ── Table / Policy List ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 600; }
+
+  .filter-bar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 11px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13.5px;
+    font-family: var(--font);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text-dim); }
+
+  select {
+    padding: 8px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13.5px;
+    font-family: var(--font);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  select:focus { border-color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    font-weight: 600;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-hover); }
+  tbody td {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    vertical-align: middle;
+  }
+  .td-name { font-weight: 600; color: var(--text); }
+  .td-company { color: var(--text-muted); font-size: 12px; }
+  .td-policy { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+  .td-amount { font-family: var(--mono); font-weight: 600; }
+  .td-date { font-size: 12.5px; color: var(--text-muted); }
+
+  .empty-state {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  /* ── Modal / Drawer ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 620px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    transform: translateY(16px) scale(0.97);
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+    opacity: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .overlay.open .modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0;
+    background: var(--bg-card);
+    z-index: 10;
+    border-radius: 16px 16px 0 0;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-close {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 16px;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--border-light); }
+
+  .modal-body { padding: 20px 24px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .form-full { grid-column: 1 / -1; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--muted); }
-  .field input, .field select, .field textarea {
-    padding: 8px 10px; border: 1px solid var(--border-md); border-radius: var(--radius);
-    font-size: 13px; font-family: inherit; background: white; color: var(--text); width: 100%;
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
   }
-  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #378ADD; }
-  .field textarea { min-height: 64px; resize: vertical; }
-  .required { color: #E24B4A; margin-left: 2px; }
-  .toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
-  .toggle-btn { padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border-md); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
-  .toggle-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+  .form-control {
+    padding: 9px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .form-control::placeholder { color: var(--text-dim); }
 
-  /* ── loading/error ── */
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  textarea.form-control { resize: vertical; min-height: 72px; }
+
+  .form-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .form-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 14px; }
+
+  .riders-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .rider-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+  }
+  .rider-item span { flex: 1; }
+  .rider-remove { cursor: pointer; color: var(--text-dim); font-size: 16px; line-height: 1; padding: 2px 4px; border-radius: 4px; }
+  .rider-remove:hover { color: var(--red); background: var(--red-dim); }
+
+  .rider-add { display: flex; gap: 8px; }
+  .rider-add input { flex: 1; }
+
+  .modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+    position: sticky; bottom: 0;
+    background: var(--bg-card);
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* ── Detail Panel ── */
+  .detail-panel {
+    position: fixed;
+    top: 0; right: -460px; bottom: 0;
+    width: 440px;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border);
+    z-index: 150;
+    transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.4);
+  }
+  .detail-panel.open { right: 0; }
+
+  .detail-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: var(--bg-card);
+    z-index: 10;
+  }
+  .detail-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .detail-name { font-size: 18px; font-weight: 700; }
+  .detail-company { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .detail-actions { display: flex; gap: 8px; }
+  .detail-body { padding: 20px; }
+
+  .info-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-key { color: var(--text-muted); }
+  .info-val { font-weight: 500; text-align: right; }
+
+  .detail-section { margin-top: 20px; }
+  .detail-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .rider-badge {
+    display: inline-flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin: 3px;
+  }
+
+  .coverage-amount {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 4px;
+  }
+
+  /* ── API Config Panel ── */
+  .config-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .config-panel.open { display: block; }
+  .config-row { display: flex; gap: 10px; }
+  .api-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; padding: 4px 10px;
+    border-radius: 100px;
+    font-weight: 600;
+  }
+  .api-status.ok { background: var(--green-dim); color: var(--green); }
+  .api-status.err { background: var(--red-dim); color: var(--red); }
+  .api-status.idle { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* ── Toast ── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13.5px;
+    box-shadow: var(--shadow);
+    animation: toastIn 0.2s ease;
+    min-width: 260px;
+    max-width: 360px;
+  }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+  .toast.warning { border-left: 3px solid var(--amber); }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* ── Loading ── */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--accent); color: white; padding: 10px 18px; border-radius: var(--radius); font-size: 13px; z-index: 99; opacity: 0; transition: opacity .3s; pointer-events: none; }
-  .toast.show { opacity: 1; }
 
-  @media (max-width: 700px) {
-    .metrics { grid-template-columns: repeat(2, 1fr); }
-    .main-grid { grid-template-columns: 1fr; }
-    .policy-row { grid-template-columns: 38px 1fr auto; }
-    .policy-exp, .policy-freq { display: none; }
-    .drawer { width: 100%; right: -100%; }
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-input) 25%, var(--bg-hover) 50%, var(--bg-input) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 4px;
+  }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+  /* ── Confirm Dialog ── */
+  .confirm-dialog {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.2s;
+  }
+  .overlay.open .confirm-dialog { transform: scale(1); opacity: 1; }
+  .confirm-icon { font-size: 32px; margin-bottom: 12px; }
+  .confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .confirm-msg { font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; }
+  }
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .detail-panel { width: 100%; right: -100%; }
   }
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- setup banner -->
-  <div class="setup-banner" id="setupBanner">
-    <h3>⚙️ ตั้งค่าการเชื่อมต่อ Google Sheets</h3>
-    <ol>
-      <li>ไปที่ <a href="https://sheets.google.com" target="_blank">Google Sheets</a> → สร้าง Spreadsheet ใหม่</li>
-      <li>เปิด <strong>Extensions → Apps Script</strong> → วางโค้ดจากไฟล์ <code>Code.gs</code> ที่แนบมา</li>
-      <li>กด <strong>Deploy → New deployment → Web app</strong></li>
-      <li>ตั้ง <em>Execute as: Me</em> และ <em>Who has access: Anyone</em> แล้วกด Deploy</li>
-      <li>คัดลอก <strong>Web app URL</strong> มาวางด้านล่าง แล้วกด บันทึก</li>
-    </ol>
-    <div class="url-row">
-      <input type="url" class="url-input" id="scriptUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
-      <button class="btn btn-primary btn-sm" onclick="saveUrl()">บันทึก URL</button>
-    </div>
-  </div>
+<div class="shell">
 
-  <!-- topbar -->
-  <div class="topbar">
-    <div>
-      <div class="topbar-title">กรมธรรม์ประกันของฉัน</div>
-      <div class="topbar-sub" id="lastSync">ยังไม่ได้เชื่อมต่อ</div>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🛡</div>
+      <div class="logo-text">PortfolioIns</div>
+      <div class="logo-sub">ระบบจัดการกรมธรรม์</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="btn btn-outline btn-sm" onclick="loadPolicies()" id="syncBtn">↻ รีเฟรช</button>
-      <button class="btn btn-primary" onclick="openModal()">+ เพิ่มกรมธรรม์</button>
-    </div>
-  </div>
-
-  <!-- metrics -->
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">กรมธรรม์ทั้งหมด</div>
-      <div class="metric-val" id="mTotal">—</div>
-      <div class="metric-sub" id="mActive"></div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">เบี้ยประกันรายปี</div>
-      <div class="metric-val" id="mPremium">—</div>
-      <div class="metric-sub" id="mPremiumSub"></div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">ทุนประกันรวม</div>
-      <div class="metric-val" id="mCoverage">—</div>
-      <div class="badge badge-info" style="margin-top:5px;">ประกันชีวิต</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">ใกล้หมดอายุ</div>
-      <div class="metric-val" id="mExpiring">—</div>
-      <div class="badge badge-warning" id="mExpiringBadge">ใน 60 วัน</div>
-    </div>
-  </div>
-
-  <!-- main grid -->
-  <div class="main-grid">
-    <!-- policy list -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-        <div class="card-title" style="margin:0;">รายการกรมธรรม์</div>
-        <div id="loadingSpinner" style="display:none;"><div class="spinner"></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="setPage('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
       </div>
-      <div class="filters">
-        <button class="filter-btn active" onclick="filterBy('all',this)">ทั้งหมด</button>
-        <button class="filter-btn" onclick="filterBy('life',this)">ชีวิต</button>
-        <button class="filter-btn" onclick="filterBy('health',this)">สุขภาพ</button>
-        <button class="filter-btn" onclick="filterBy('auto',this)">รถยนต์</button>
-        <button class="filter-btn" onclick="filterBy('home',this)">บ้าน</button>
-        <button class="filter-btn" onclick="filterBy('travel',this)">เดินทาง</button>
+      <div class="nav-item" onclick="setPage('policies')">
+        <span class="nav-icon">📋</span> กรมธรรม์ทั้งหมด
       </div>
-      <div class="policy-list" id="policyList">
-        <div class="empty">กำลังโหลด...</div>
+      <div class="nav-item" onclick="setPage('expiring')">
+        <span class="nav-icon">⏰</span> ใกล้หมดอายุ
+        <span id="expiring-badge" style="margin-left:auto; background:var(--amber-dim); color:var(--amber); font-size:11px; font-weight:700; padding:2px 8px; border-radius:100px; display:none;"></span>
+      </div>
+      <div class="nav-item" onclick="setPage('expired')">
+        <span class="nav-icon">❌</span> หมดอายุแล้ว
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="api-config-btn" onclick="toggleConfig()">
+        <span>⚙️</span>
+        <span id="sidebar-api-status">ตั้งค่า API URL</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-title" id="page-title">Dashboard</span>
+        <span id="topbar-api-status" class="api-status idle">⬤ ไม่ได้เชื่อมต่อ</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-secondary btn-sm" onclick="refreshData()" id="refresh-btn">
+          <span>↻</span> รีเฟรช
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+          <span>＋</span> เพิ่มกรมธรรม์
+        </button>
       </div>
     </div>
 
-    <!-- side -->
-    <div class="side-col">
-      <div class="card">
-        <div class="card-title">ชำระเบี้ยที่กำลังจะมาถึง</div>
-        <div class="upcoming-list" id="upcomingList">
-          <div class="empty" style="padding:1rem 0;">ยังไม่มีข้อมูล</div>
+    <div class="page">
+      <!-- API Config Panel -->
+      <div class="config-panel" id="config-panel">
+        <div style="font-size:13px; font-weight:700; margin-bottom:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted);">🔗 เชื่อมต่อ Google Apps Script</div>
+        <div class="config-row">
+          <input class="form-control" id="api-url-input" placeholder="วาง URL ของ Google Apps Script Web App ที่นี่..." style="flex:1;">
+          <button class="btn btn-primary" onclick="saveApiUrl()">บันทึก &amp; ทดสอบ</button>
+        </div>
+        <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">Deploy Google Apps Script เป็น Web App → Execute as: Me → Who has access: Anyone → นำ URL มาใส่ด้านบน</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card c-purple">
+          <div class="stat-icon">📋</div>
+          <div class="stat-label">กรมธรรม์ทั้งหมด</div>
+          <div class="stat-val" id="stat-total">—</div>
+          <div class="stat-sub">รายการในระบบ</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">คุ้มครองอยู่</div>
+          <div class="stat-val" id="stat-active">—</div>
+          <div class="stat-sub">กรมธรรม์ที่ยังมีผล</div>
+        </div>
+        <div class="stat-card c-amber">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-label">ใกล้หมดอายุ</div>
+          <div class="stat-val" id="stat-expiring">—</div>
+          <div class="stat-sub">ภายใน 60 วัน</div>
+        </div>
+        <div class="stat-card c-red">
+          <div class="stat-icon">💸</div>
+          <div class="stat-label">ค่าเบี้ยรวม/ปี</div>
+          <div class="stat-val" id="stat-premium">—</div>
+          <div class="stat-sub">บาทต่อปี (ประมาณ)</div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title">สรุปตามประเภท</div>
-        <div id="typeBreakdown" style="font-size:13px;"></div>
+
+      <!-- Table Card -->
+      <div class="card" id="table-card">
+        <div class="card-header">
+          <span class="card-title" id="table-title">กรมธรรม์ทั้งหมด</span>
+          <span id="count-label" style="font-size:12.5px; color:var(--text-muted);"></span>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="ค้นหาชื่อ, บริษัท, เลขกรมธรรม์..." oninput="renderTable()">
+          </div>
+          <select id="type-filter" onchange="renderTable()">
+            <option value="">ทุกประเภท</option>
+            <option value="ชีวิต">ชีวิต</option>
+            <option value="สุขภาพ">สุขภาพ</option>
+            <option value="รถยนต์">รถยนต์</option>
+            <option value="อัคคีภัย">อัคคีภัย</option>
+            <option value="อุบัติเหตุ">อุบัติเหตุ</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+          <select id="status-filter" onchange="renderTable()">
+            <option value="">ทุกสถานะ</option>
+            <option value="active">คุ้มครองอยู่</option>
+            <option value="expiring">ใกล้หมดอายุ</option>
+            <option value="expired">หมดอายุแล้ว</option>
+          </select>
+        </div>
+        <div id="table-container">
+          <div class="empty-state">
+            <div class="empty-icon">🛡</div>
+            <div class="empty-title">ยังไม่มีข้อมูล</div>
+            <div class="empty-sub">กดรีเฟรชหรือเพิ่มกรมธรรม์ใหม่</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- drawer detail -->
-<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-head">
-    <div></div>
-    <button class="close-btn" onclick="closeDrawer()">✕</button>
+<!-- ── Detail Panel ── -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div class="detail-top">
+      <button class="btn btn-secondary btn-sm" onclick="closeDetail()">← กลับ</button>
+      <div class="detail-actions">
+        <button class="btn btn-secondary btn-sm" id="detail-edit-btn">✏️ แก้ไข</button>
+        <button class="btn btn-danger btn-sm" id="detail-del-btn">🗑 ลบ</button>
+      </div>
+    </div>
+    <div id="detail-header-content"></div>
   </div>
-  <div id="drawerContent"></div>
+  <div class="detail-body" id="detail-body"></div>
 </div>
+<div style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:140;display:none;backdrop-filter:blur(2px);" id="detail-overlay" onclick="closeDetail()"></div>
 
-<!-- modal add/edit -->
-<div class="modal-wrap" id="modalWrap">
+<!-- ── Add/Edit Modal ── -->
+<div class="overlay" id="form-overlay" onclick="closeFormModal(event)">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">เพิ่มกรมธรรม์ใหม่</div>
-    <input type="hidden" id="editId">
-    <div class="form-grid">
-      <div class="field form-full">
-        <label>ชื่อแผนประกัน <span class="required">*</span></label>
-        <input type="text" id="fName" placeholder="เช่น ประกันชีวิต AIA Signature">
-      </div>
-      <div class="field">
-        <label>บริษัทประกัน <span class="required">*</span></label>
-        <select id="fCompany">
-          <option value="">เลือกบริษัท...</option>
-          <option>AIA Thailand</option><option>ไทยประกันชีวิต</option>
-          <option>กรุงเทพประกันชีวิต</option><option>เมืองไทยประกันชีวิต</option>
-          <option>Allianz Ayudhya</option><option>FWD Thailand</option>
-          <option>Prudential Thailand</option><option>SCB Life</option>
-          <option>วิริยะประกันภัย</option><option>เมืองไทยประกันภัย</option>
-          <option>Cigna Thailand</option><option>AXA Thailand</option>
-          <option>อื่นๆ</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>เลขกรมธรรม์ <span class="required">*</span></label>
-        <input type="text" id="fPolicyNo" placeholder="เช่น AIA-TH-2025-00001">
-      </div>
-      <div class="field">
-        <label>ประเภทประกัน</label>
-        <select id="fType">
-          <option value="life">ชีวิต</option>
-          <option value="health">สุขภาพ</option>
-          <option value="auto">รถยนต์</option>
-          <option value="home">บ้าน</option>
-          <option value="travel">เดินทาง</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>ประเภทย่อย</label>
-        <select id="fSubType">
-          <option>ตลอดชีพ</option><option>สะสมทรัพย์</option>
-          <option>ชั่วระยะเวลา</option><option>บำนาญ</option>
-          <option>สุขภาพ OPD/IPD</option><option>โรคร้ายแรง</option>
-          <option>ชั้น 1</option><option>ชั้น 2+</option><option>ชั้น 3</option>
-          <option>อื่นๆ</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>วันที่เริ่มคุ้มครอง <span class="required">*</span></label>
-        <input type="date" id="fStart">
-      </div>
-      <div class="field">
-        <label>วันหมดอายุ <span class="required">*</span></label>
-        <input type="date" id="fEnd">
-      </div>
-      <div class="field">
-        <label>เบี้ยประกัน (บาท) <span class="required">*</span></label>
-        <input type="number" id="fPremium" placeholder="18000" min="0">
-      </div>
-      <div class="field">
-        <label>งวดชำระ</label>
-        <select id="fFreq">
-          <option value="ปี">รายปี</option>
-          <option value="6 เดือน">ราย 6 เดือน</option>
-          <option value="ไตรมาส">รายไตรมาส</option>
-          <option value="เดือน">รายเดือน</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>ทุนประกัน (บาท)</label>
-        <input type="number" id="fCoverage" placeholder="1000000" min="0">
-      </div>
-      <div class="field">
-        <label>ความคุ้มครองเสริม</label>
-        <div class="toggle-group" id="fRiders">
-          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">ทุพพลภาพ</button>
-          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">โรคร้ายแรง</button>
-          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">อุบัติเหตุ</button>
-          <button type="button" class="toggle-btn" onclick="this.classList.toggle('selected')">สุขภาพ</button>
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">เพิ่มกรมธรรม์ใหม่</div>
+      <div class="modal-close" onclick="closeFormModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">ชื่อผู้เอาประกัน *</label>
+          <input class="form-control" id="f-name" placeholder="ชื่อ-นามสกุล">
+        </div>
+        <div class="form-group">
+          <label class="form-label">บริษัทประกัน *</label>
+          <input class="form-control" id="f-company" placeholder="เช่น AIA, Muang Thai">
+        </div>
+        <div class="form-group">
+          <label class="form-label">เลขกรมธรรม์ *</label>
+          <input class="form-control" id="f-policyNo" placeholder="XXXXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ประเภทประกัน</label>
+          <select class="form-control" id="f-type">
+            <option value="ชีวิต">ชีวิต</option>
+            <option value="สุขภาพ">สุขภาพ</option>
+            <option value="รถยนต์">รถยนต์</option>
+            <option value="อัคคีภัย">อัคคีภัย</option>
+            <option value="อุบัติเหตุ">อุบัติเหตุ</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">วันที่เริ่มต้น</label>
+          <input class="form-control" id="f-startDate" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">วันที่สิ้นสุด *</label>
+          <input class="form-control" id="f-endDate" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">เบี้ยประกัน (บาท) *</label>
+          <input class="form-control" id="f-premium" type="number" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ความถี่ชำระ</label>
+          <select class="form-control" id="f-frequency">
+            <option value="รายเดือน">รายเดือน</option>
+            <option value="รายไตรมาส">รายไตรมาส</option>
+            <option value="ราย 6 เดือน">ราย 6 เดือน</option>
+            <option value="รายปี">รายปี</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">ทุนประกัน (บาท)</label>
+          <input class="form-control" id="f-coverage" type="number" placeholder="0.00">
         </div>
       </div>
-      <div class="field form-full" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
-        <label style="font-weight:600;font-size:13px;color:var(--text);">ผู้รับผลประโยชน์</label>
+
+      <!-- Riders -->
+      <div class="form-section">
+        <div class="form-section-title">สัญญาเพิ่มเติม (Riders)</div>
+        <div class="riders-wrap" id="riders-list"></div>
+        <div class="rider-add" style="margin-top:8px;">
+          <input class="form-control" id="rider-input" placeholder="เพิ่มสัญญาเพิ่มเติม..." style="flex:1;">
+          <button class="btn btn-secondary btn-sm" onclick="addRider()">เพิ่ม</button>
+        </div>
       </div>
-      <div class="field">
-        <label>ชื่อ-นามสกุล</label>
-        <input type="text" id="fBName" placeholder="นางสมศรี มีทรัพย์">
+
+      <!-- Beneficiary -->
+      <div class="form-section">
+        <div class="form-section-title">ผู้รับผลประโยชน์</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">ชื่อผู้รับผลประโยชน์</label>
+            <input class="form-control" id="f-beneficiaryName" placeholder="ชื่อ-นามสกุล">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ความสัมพันธ์</label>
+            <input class="form-control" id="f-beneficiaryRel" placeholder="เช่น คู่สมรส, บุตร">
+          </div>
+          <div class="form-group">
+            <label class="form-label">เบอร์โทรศัพท์</label>
+            <input class="form-control" id="f-beneficiaryPhone" placeholder="0XX-XXX-XXXX">
+          </div>
+          <div class="form-group">
+            <label class="form-label">สัดส่วน (%)</label>
+            <input class="form-control" id="f-beneficiaryPct" type="number" placeholder="100" min="0" max="100">
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label>ความสัมพันธ์</label>
-        <select id="fBRel">
-          <option value="">เลือก...</option>
-          <option>คู่สมรส</option><option>บิดา</option><option>มารดา</option>
-          <option>บุตร</option><option>พี่น้อง</option><option>อื่นๆ</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>เบอร์โทรศัพท์</label>
-        <input type="tel" id="fBPhone" placeholder="0812345678">
-      </div>
-      <div class="field">
-        <label>สัดส่วนรับผลประโยชน์</label>
-        <select id="fBPct">
-          <option>100%</option><option>75%</option><option>50%</option>
-        </select>
-      </div>
-      <div class="field form-full">
-        <label>หมายเหตุ</label>
-        <textarea id="fNote" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+
+      <!-- Notes -->
+      <div class="form-section">
+        <div class="form-section-title">หมายเหตุ</div>
+        <textarea class="form-control" id="f-note" placeholder="บันทึกข้อมูลเพิ่มเติม..."></textarea>
       </div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="submitForm()" id="saveBtn">บันทึก</button>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeFormModal()">ยกเลิก</button>
+      <button class="btn btn-primary" id="save-btn" onclick="savePolicy()">
+        <span>💾</span> บันทึก
+      </button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- ── Confirm Modal ── -->
+<div class="overlay" id="confirm-overlay">
+  <div class="confirm-dialog">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">ยืนยันการลบ?</div>
+    <div class="confirm-msg" id="confirm-msg">กรมธรรม์นี้จะถูกลบออกจากระบบถาวร</div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()">ยกเลิก</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">ลบเลย</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
 
 <script>
-function formatDate(dateStr) {
-  if (!dateStr) return '-';
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const buddhistYear = d.getFullYear() + 543;
-  return `${d.getDate()} ${months[d.getMonth()]} ${buddhistYear}`;
-}
+// ===========================
+//  STATE
+// ===========================
+let policies = [];
+let currentPage = 'dashboard';
+let currentDetail = null;
+let pendingDeleteId = null;
+let riders = [];
+let apiUrl = localStorage.getItem('ins_api_url') || '';
 
-const STORAGE_KEY = 'insurance_script_url';
-let scriptUrl = localStorage.getItem(STORAGE_KEY) || '';
-let allPolicies = [];
-let currentFilter = 'all';
-
-const typeMap = {
-  life:'ชีวิต', health:'สุขภาพ', auto:'รถยนต์', home:'บ้าน', travel:'เดินทาง'
-};
-const typeIcon = {
-  life:'🛡️', health:'🏥', auto:'🚗', home:'🏠', travel:'✈️'
-};
-const typeClass = {
-  life:'icon-life', health:'icon-health', auto:'icon-auto', home:'icon-home', travel:'icon-travel'
-};
-const freqMultiplier = { 'ปี':1, '6 เดือน':2, 'ไตรมาส':4, 'เดือน':12 };
-
-function saveUrl() {
-  const u = document.getElementById('scriptUrl').value.trim();
-  if (!u) { showToast('กรุณากรอก URL'); return; }
-  scriptUrl = u;
-  localStorage.setItem(STORAGE_KEY, u);
-  document.getElementById('setupBanner').style.display = 'none';
-  showToast('บันทึก URL สำเร็จ');
-  loadPolicies();
-}
-
-function api(params) {
-  if (!scriptUrl) { showToast('กรุณาตั้งค่า URL ก่อน'); return Promise.reject(); }
-  const url = scriptUrl + '?' + new URLSearchParams(params).toString();
-  return fetch(url).then(r => r.json());
-}
-
-async function loadPolicies() {
-  if (!scriptUrl) return;
-  document.getElementById('loadingSpinner').style.display = '';
-  try {
-    const res = await api({ action: 'getAll' });
-    if (res.success) {
-      allPolicies = res.policies;
-      renderAll();
-      const now = new Date().toLocaleString('th-TH');
-      document.getElementById('lastSync').textContent = 'ซิงค์ล่าสุด: ' + now;
-    } else {
-      showToast('โหลดข้อมูลไม่สำเร็จ: ' + res.error);
-    }
-  } catch(e) { showToast('เชื่อมต่อไม่ได้ ตรวจสอบ URL อีกครั้ง'); }
-  document.getElementById('loadingSpinner').style.display = 'none';
-}
-
-function renderAll() {
-  renderMetrics();
-  renderPolicies(currentFilter);
-  renderUpcoming();
-  renderBreakdown();
-}
-
-function renderMetrics() {
-  const active = allPolicies.filter(p => p.status === 'active').length;
-  const expiring = allPolicies.filter(p => p.status === 'expiring').length;
-  const totalPremium = allPolicies.reduce((s, p) => {
-    const m = freqMultiplier[p.frequency] || 1;
-    return s + (parseFloat(p.premium) || 0) * m;
-  }, 0);
-  const totalCoverage = allPolicies.filter(p => p.type === 'life')
-    .reduce((s, p) => s + (parseFloat(p.coverage) || 0), 0);
-
-  document.getElementById('mTotal').textContent = allPolicies.length;
-  document.getElementById('mActive').textContent = active + ' ใช้งานอยู่';
-  document.getElementById('mPremium').textContent = '฿' + Math.round(totalPremium).toLocaleString('th-TH');
-  document.getElementById('mPremiumSub').textContent = 'เฉลี่ย ฿' + Math.round(totalPremium / 12).toLocaleString('th-TH') + '/เดือน';
-  document.getElementById('mCoverage').textContent = totalCoverage >= 1e6
-    ? '฿' + (totalCoverage / 1e6).toFixed(1) + 'ล.'
-    : '฿' + Math.round(totalCoverage).toLocaleString('th-TH');
-  document.getElementById('mExpiring').textContent = expiring;
-}
-
-function renderPolicies(filter) {
-  const list = document.getElementById('policyList');
-  const filtered = filter === 'all' ? allPolicies : allPolicies.filter(p => p.type === filter);
-  if (!filtered.length) { list.innerHTML = '<div class="empty">ไม่มีกรมธรรม์ในหมวดนี้</div>'; return; }
-  list.innerHTML = filtered.map(p => {
-    const dotClass = { active:'dot-active', expiring:'dot-expiring', expired:'dot-expired' }[p.status] || 'dot-active';
-    const txtClass = { active:'text-active', expiring:'text-expiring', expired:'text-expired' }[p.status] || 'text-active';
-    const statusLabel = { active:'ใช้งานอยู่', expiring:'ใกล้หมดอายุ', expired:'หมดอายุ' }[p.status] || '';
-    const m = freqMultiplier[p.frequency] || 1;
-    const annual = Math.round((parseFloat(p.premium) || 0) * m).toLocaleString('th-TH');
-    const icon = typeIcon[p.type] || '📄';
-    const cls  = typeClass[p.type] || '';
-    return `<div class="policy-row" onclick="openDrawer('${p.id}')">
-      <div class="policy-icon ${cls}">${icon}</div>
-      <div>
-        <div class="policy-name">${p.name}</div>
-        <div class="policy-company">${p.company}</div>
-      </div>
-      <div class="col-amount">
-        <div class="policy-amount">฿${Number(p.premium).toLocaleString('th-TH')}</div>
-        <div class="policy-freq">/${p.frequency}</div>
-      </div>
-      <div class="policy-exp">หมดอายุ ${formatDate(p.endDate)}</div>
-      <div><span class="status-dot ${dotClass}"></span><span class="status-text ${txtClass}">${statusLabel}</span></div>
-    </div>`;
-  }).join('');
-}
-
-function renderUpcoming() {
-  const sorted = [...allPolicies]
-    .filter(p => p.status !== 'expired')
-    .sort((a, b) => new Date(a.endDate) - new Date(b.endDate))
-    .slice(0, 4);
-  const el = document.getElementById('upcomingList');
-  if (!sorted.length) { el.innerHTML = '<div class="empty" style="padding:1rem 0;">ไม่มีรายการ</div>'; return; }
-  el.innerHTML = sorted.map(p => {
-    const d = new Date(p.endDate);
-    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];    return `<div class="upcoming-item">
-      <div class="up-date-box"><div class="up-month">${months[d.getMonth()]}</div><div class="up-day">${d.getDate()}</div></div>
-      <div><div class="up-name">${p.name}</div><div class="up-amt">฿${Number(p.premium).toLocaleString('th-TH')} · ${p.frequency}</div></div>
-    </div>`;
-  }).join('');
-}
-
-function renderBreakdown() {
-  const counts = {};
-  allPolicies.forEach(p => { counts[p.type] = (counts[p.type] || 0) + 1; });
-  const el = document.getElementById('typeBreakdown');
-  el.innerHTML = Object.entries(counts).map(([t, c]) =>
-    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">
-      <span>${typeIcon[t] || '📄'} ${typeMap[t] || t}</span>
-      <span style="font-weight:600;">${c} กรมธรรม์</span>
-    </div>`
-  ).join('') || '<div style="font-size:13px;color:var(--hint);padding:8px 0;">ยังไม่มีข้อมูล</div>';
-}
-
-function filterBy(type, btn) {
-  currentFilter = type;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderPolicies(type);
-}
-
-function openDrawer(id) {
-  const p = allPolicies.find(x => x.id === id);
-  if (!p) return;
-  const icon = typeIcon[p.type] || '📄';
-  const cls  = typeClass[p.type] || '';
-  const statusLabel = { active:'ใช้งานอยู่', expiring:'ใกล้หมดอายุ', expired:'หมดอายุ' }[p.status] || '';
-  const badgeCls = { active:'badge-success', expiring:'badge-warning', expired:'badge-danger' }[p.status] || 'badge-info';
-  const m = freqMultiplier[p.frequency] || 1;
-  const annual = Math.round((parseFloat(p.premium) || 0) * m).toLocaleString('th-TH');
-
-  document.getElementById('drawerContent').innerHTML = `
-    <div class="det-icon ${cls}">${icon}</div>
-    <div class="det-name">${p.name}</div>
-    <div class="det-company">${p.company}</div>
-    <div><span class="badge ${badgeCls}" style="margin-top:6px;">${statusLabel}</span></div>
-    <div class="det-section">
-      <div class="det-section-title">ข้อมูลกรมธรรม์</div>
-      <div class="det-row"><span class="det-key">เลขกรมธรรม์</span><span class="det-val">${p.policyNo}</span></div>
-      <div class="det-row"><span class="det-key">ประเภท</span><span class="det-val">${typeMap[p.type] || p.type} · ${p.subType || ''}</span></div>
-      <div class="det-row"><span class="det-key">เริ่มต้น</span><span class="det-val">${formatDate(p.startDate)}</span></div>
-      <div class="det-row"><span class="det-key">หมดอายุ</span><span class="det-val">${formatDate(p.endDate)}</span></div>
-      <div class="det-row"><span class="det-key">ทุนประกัน</span><span class="det-val">฿${Number(p.coverage||0).toLocaleString('th-TH')}</span></div>
-      <div class="det-row"><span class="det-key">ความคุ้มครองเสริม</span><span class="det-val">${p.riders || '-'}</span></div>
-    </div>
-    <div class="det-section">
-      <div class="det-section-title">เบี้ยประกัน</div>
-      <div class="det-row"><span class="det-key">เบี้ย</span><span class="det-val">฿${Number(p.premium).toLocaleString('th-TH')} / ${p.frequency}</span></div>
-      <div class="det-row"><span class="det-key">รายปีรวม</span><span class="det-val">฿${annual}</span></div>
-    </div>
-    <div class="det-section">
-      <div class="det-section-title">ผู้รับผลประโยชน์</div>
-      <div class="det-row"><span class="det-key">ชื่อ</span><span class="det-val">${p.beneficiaryName || '-'}</span></div>
-      <div class="det-row"><span class="det-key">ความสัมพันธ์</span><span class="det-val">${p.beneficiaryRel || '-'}</span></div>
-      <div class="det-row"><span class="det-key">สัดส่วน</span><span class="det-val">${p.beneficiaryPct || '-'}</span></div>
-    </div>
-    ${p.note ? `<div class="det-section"><div class="det-section-title">หมายเหตุ</div><div style="font-size:13px;color:var(--muted);padding:6px 0;">${p.note}</div></div>` : ''}
-    <div class="det-actions">
-      <button class="btn btn-outline btn-sm" onclick="editPolicy('${p.id}')">แก้ไข</button>
-      <button class="btn btn-danger btn-sm" onclick="deletePolicy('${p.id}')">ลบ</button>
-    </div>
-  `;
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('drawer').classList.add('open');
-}
-
-function closeDrawer() {
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('drawer').classList.remove('open');
-}
-
-function openModal(prefill) {
-  document.getElementById('modalTitle').textContent = prefill ? 'แก้ไขกรมธรรม์' : 'เพิ่มกรมธรรม์ใหม่';
-  document.getElementById('editId').value = prefill ? prefill.id : '';
-  const fields = ['fName','fCompany','fPolicyNo','fStart','fEnd','fPremium','fCoverage','fNote','fBName','fBPhone'];
-  const keys   = ['name','company','policyNo','startDate','endDate','premium','coverage','note','beneficiaryName','beneficiaryPhone'];
-  fields.forEach((f, i) => document.getElementById(f).value = prefill ? (prefill[keys[i]] || '') : '');
-  if (prefill) {
-    document.getElementById('fType').value = prefill.type || 'life';
-    document.getElementById('fFreq').value = prefill.frequency || 'ปี';
-    document.getElementById('fBRel').value = prefill.beneficiaryRel || '';
-    document.getElementById('fBPct').value = prefill.beneficiaryPct || '100%';
+// ===========================
+//  INIT
+// ===========================
+document.addEventListener('DOMContentLoaded', () => {
+  if (apiUrl) {
+    document.getElementById('api-url-input').value = apiUrl;
+    updateApiStatusUI(true);
+    refreshData();
+  } else {
+    document.getElementById('config-panel').classList.add('open');
+    updateApiStatusUI(false);
   }
-  document.querySelectorAll('#fRiders .toggle-btn').forEach(b => {
-    b.classList.toggle('selected', prefill && (prefill.riders || '').includes(b.textContent));
+  // rider add on enter
+  document.getElementById('rider-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addRider(); }
   });
-  document.getElementById('modalWrap').classList.add('open');
-}
-function closeModal() { document.getElementById('modalWrap').classList.remove('open'); }
+});
 
-function editPolicy(id) {
-  const p = allPolicies.find(x => x.id === id);
-  if (p) { closeDrawer(); openModal(p); }
+// ===========================
+//  API CONFIG
+// ===========================
+function toggleConfig() {
+  document.getElementById('config-panel').classList.toggle('open');
+}
+
+function saveApiUrl() {
+  const val = document.getElementById('api-url-input').value.trim();
+  if (!val) { toast('กรุณากรอก URL', 'error'); return; }
+  apiUrl = val;
+  localStorage.setItem('ins_api_url', apiUrl);
+  document.getElementById('config-panel').classList.remove('open');
+  toast('บันทึก URL สำเร็จ กำลังทดสอบ...', 'warning');
+  refreshData();
+}
+
+function updateApiStatusUI(ok) {
+  const el = document.getElementById('topbar-api-status');
+  const side = document.getElementById('sidebar-api-status');
+  if (ok) {
+    el.className = 'api-status ok';
+    el.textContent = '⬤ เชื่อมต่อแล้ว';
+    side.textContent = 'เชื่อมต่อแล้ว';
+  } else {
+    el.className = 'api-status err';
+    el.textContent = '⬤ ไม่ได้เชื่อมต่อ';
+    side.textContent = 'ตั้งค่า API URL';
+  }
+}
+
+// ===========================
+//  API CALLS
+// ===========================
+async function apiCall(params) {
+  if (!apiUrl) { toast('กรุณาตั้งค่า API URL ก่อน', 'error'); return null; }
+  const url = new URL(apiUrl);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  try {
+    const res = await fetch(url.toString());
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    toast('เชื่อมต่อ API ไม่ได้: ' + e.message, 'error');
+    updateApiStatusUI(false);
+    return null;
+  }
+}
+
+async function refreshData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.innerHTML = '<span class="spinner"></span> กำลังโหลด';
+  btn.disabled = true;
+  renderSkeletons();
+
+  const data = await apiCall({ action: 'getAll' });
+  btn.innerHTML = '<span>↻</span> รีเฟรช';
+  btn.disabled = false;
+
+  if (!data) return;
+  if (!data.success) { toast('โหลดข้อมูลล้มเหลว: ' + (data.error || ''), 'error'); return; }
+
+  policies = data.policies || [];
+  updateApiStatusUI(true);
+  updateStats();
+  renderTable();
+  toast(`โหลดข้อมูล ${policies.length} รายการสำเร็จ`, 'success');
+}
+
+async function savePolicy() {
+  const id = document.getElementById('edit-id').value;
+  const payload = {
+    id,
+    name: document.getElementById('f-name').value.trim(),
+    company: document.getElementById('f-company').value.trim(),
+    policyNo: document.getElementById('f-policyNo').value.trim(),
+    type: document.getElementById('f-type').value,
+    startDate: document.getElementById('f-startDate').value,
+    endDate: document.getElementById('f-endDate').value,
+    premium: parseFloat(document.getElementById('f-premium').value) || 0,
+    frequency: document.getElementById('f-frequency').value,
+    coverage: parseFloat(document.getElementById('f-coverage').value) || 0,
+    riders: [...riders],
+    beneficiaryName: document.getElementById('f-beneficiaryName').value.trim(),
+    beneficiaryRel: document.getElementById('f-beneficiaryRel').value.trim(),
+    beneficiaryPhone: document.getElementById('f-beneficiaryPhone').value.trim(),
+    beneficiaryPct: parseFloat(document.getElementById('f-beneficiaryPct').value) || 0,
+    note: document.getElementById('f-note').value.trim(),
+  };
+
+  if (!payload.name || !payload.company || !payload.policyNo || !payload.endDate) {
+    toast('กรุณากรอกข้อมูลที่จำเป็น (*)', 'error'); return;
+  }
+
+  const btn = document.getElementById('save-btn');
+  btn.innerHTML = '<span class="spinner"></span> กำลังบันทึก';
+  btn.disabled = true;
+
+  const action = id ? 'update' : 'add';
+  const res = await apiCall({ action, data: JSON.stringify(payload) });
+  btn.innerHTML = '<span>💾</span> บันทึก';
+  btn.disabled = false;
+
+  if (!res) return;
+  if (!res.success) { toast('บันทึกล้มเหลว: ' + (res.error || ''), 'error'); return; }
+
+  closeFormModal();
+  toast(id ? 'แก้ไขสำเร็จ' : 'เพิ่มกรมธรรม์สำเร็จ', 'success');
+  refreshData();
 }
 
 async function deletePolicy(id) {
-  if (!confirm('ต้องการลบกรมธรรม์นี้ใช่ไหม?')) return;
-  try {
-    const res = await api({ action: 'delete', id });
-    if (res.success) { showToast('ลบเรียบร้อย'); closeDrawer(); loadPolicies(); }
-    else showToast('ลบไม่สำเร็จ: ' + res.error);
-  } catch(e) { showToast('เกิดข้อผิดพลาด'); }
+  const res = await apiCall({ action: 'delete', id });
+  if (!res) return;
+  if (!res.success) { toast('ลบล้มเหลว: ' + (res.error || ''), 'error'); return; }
+  toast('ลบกรมธรรม์สำเร็จ', 'success');
+  closeDetail();
+  refreshData();
 }
 
-async function submitForm() {
-  const required = [
-    { id: 'fName', label: 'ชื่อแผนประกัน' },
-    { id: 'fCompany', label: 'บริษัทประกัน' },
-    { id: 'fPolicyNo', label: 'เลขกรมธรรม์' },
-    { id: 'fStart', label: 'วันที่เริ่มคุ้มครอง' },
-    { id: 'fEnd', label: 'วันหมดอายุ' },
-    { id: 'fPremium', label: 'เบี้ยประกัน' }
-  ];
-  for (const f of required) {
-    if (!document.getElementById(f.id).value) { showToast('กรุณากรอก: ' + f.label); return; }
+// ===========================
+//  STATS
+// ===========================
+function updateStats() {
+  const total = policies.length;
+  const active = policies.filter(p => p.status === 'active').length;
+  const expiring = policies.filter(p => p.status === 'expiring').length;
+
+  const premiumTotal = policies.reduce((sum, p) => {
+    const freq = { 'รายเดือน': 12, 'รายไตรมาส': 4, 'ราย 6 เดือน': 2, 'รายปี': 1 };
+    return sum + (parseFloat(p.premium) || 0) * (freq[p.frequency] || 1);
+  }, 0);
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-expiring').textContent = expiring;
+  document.getElementById('stat-premium').textContent = formatNum(premiumTotal);
+
+  const badge = document.getElementById('expiring-badge');
+  if (expiring > 0) { badge.textContent = expiring; badge.style.display = 'inline'; }
+  else { badge.style.display = 'none'; }
+}
+
+// ===========================
+//  TABLE RENDER
+// ===========================
+function getFilteredPolicies() {
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const typeF = document.getElementById('type-filter')?.value || '';
+  const statusF = document.getElementById('status-filter')?.value || '';
+
+  return policies.filter(p => {
+    const matchQ = !q ||
+      (p.name||'').toLowerCase().includes(q) ||
+      (p.company||'').toLowerCase().includes(q) ||
+      (p.policyNo||'').toLowerCase().includes(q);
+    const matchType = !typeF || p.type === typeF;
+    let matchStatus = !statusF || p.status === statusF;
+    if (currentPage === 'expiring') matchStatus = p.status === 'expiring';
+    if (currentPage === 'expired') matchStatus = p.status === 'expired';
+    return matchQ && matchType && matchStatus;
+  });
+}
+
+function renderTable() {
+  const data = getFilteredPolicies();
+  document.getElementById('count-label').textContent = `${data.length} รายการ`;
+
+  const container = document.getElementById('table-container');
+  if (!data.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">ไม่พบกรมธรรม์</div>
+      <div class="empty-sub">ลองเปลี่ยนเงื่อนไขการค้นหา</div>
+    </div>`;
+    return;
   }
 
-  const riders = Array.from(document.querySelectorAll('#fRiders .toggle-btn.selected')).map(b => b.textContent);
-  const data = {
-    name: document.getElementById('fName').value,
-    company: document.getElementById('fCompany').value,
-    policyNo: document.getElementById('fPolicyNo').value,
-    type: document.getElementById('fType').value,
-    subType: document.getElementById('fSubType').value,
-    startDate: document.getElementById('fStart').value,
-    endDate: document.getElementById('fEnd').value,
-    premium: document.getElementById('fPremium').value,
-    frequency: document.getElementById('fFreq').value,
-    coverage: document.getElementById('fCoverage').value,
-    riders,
-    beneficiaryName: document.getElementById('fBName').value,
-    beneficiaryRel: document.getElementById('fBRel').value,
-    beneficiaryPhone: document.getElementById('fBPhone').value,
-    beneficiaryPct: document.getElementById('fBPct').value,
-    note: document.getElementById('fNote').value,
+  container.innerHTML = `<div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>ผู้เอาประกัน</th>
+        <th>บริษัท</th>
+        <th>เลขกรมธรรม์</th>
+        <th>ประเภท</th>
+        <th>สิ้นสุด</th>
+        <th>เบี้ย/งวด</th>
+        <th>สถานะ</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      ${data.map(p => `
+        <tr onclick="openDetail('${p.id}')">
+          <td>
+            <div class="td-name">${esc(p.name)}</div>
+          </td>
+          <td class="td-company">${esc(p.company)}</td>
+          <td class="td-policy">${esc(p.policyNo)}</td>
+          <td><span style="font-size:13px;">${esc(p.type || '—')}</span></td>
+          <td class="td-date">${formatDate(p.endDate)}</td>
+          <td class="td-amount" style="color:var(--accent);">${formatNum(p.premium)}</td>
+          <td>${statusBadge(p.status)}</td>
+          <td onclick="event.stopPropagation()">
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="openEditModal('${p.id}')">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDelete('${p.id}','${esc(p.name)}')">🗑</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+function renderSkeletons() {
+  const container = document.getElementById('table-container');
+  container.innerHTML = `<div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+    ${[1,2,3,4,5].map(() => `
+      <div style="display:flex;gap:16px;align-items:center;">
+        <div class="skeleton" style="width:120px;height:14px;"></div>
+        <div class="skeleton" style="width:80px;height:14px;"></div>
+        <div class="skeleton" style="width:100px;height:14px;"></div>
+        <div class="skeleton" style="flex:1;height:14px;"></div>
+        <div class="skeleton" style="width:60px;height:22px;border-radius:100px;"></div>
+      </div>`).join('')}
+  </div>`;
+}
+
+// ===========================
+//  DETAIL PANEL
+// ===========================
+function openDetail(id) {
+  const p = policies.find(x => x.id === id);
+  if (!p) return;
+  currentDetail = p;
+
+  document.getElementById('detail-header-content').innerHTML = `
+    <div class="detail-name">${esc(p.name)}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+      <div class="detail-company">${esc(p.company)}</div>
+      ${statusBadge(p.status)}
+    </div>`;
+
+  const riders = p.riders ? p.riders.split(',').map(r => r.trim()).filter(Boolean) : [];
+  document.getElementById('detail-body').innerHTML = `
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">ทุนประกัน</div>
+      <div class="coverage-amount">${formatNum(p.coverage)} ฿</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">ข้อมูลกรมธรรม์</div>
+      <div class="info-row"><span class="info-key">เลขกรมธรรม์</span><span class="info-val" style="font-family:var(--mono);font-size:13px;">${esc(p.policyNo)}</span></div>
+      <div class="info-row"><span class="info-key">ประเภท</span><span class="info-val">${esc(p.type)}</span></div>
+      <div class="info-row"><span class="info-key">วันที่เริ่มต้น</span><span class="info-val">${formatDate(p.startDate)}</span></div>
+      <div class="info-row"><span class="info-key">วันที่สิ้นสุด</span><span class="info-val">${formatDate(p.endDate)}</span></div>
+      <div class="info-row"><span class="info-key">เบี้ยประกัน</span><span class="info-val" style="color:var(--accent);font-family:var(--mono);">${formatNum(p.premium)} ฿ / ${esc(p.frequency)}</span></div>
+    </div>
+
+    ${riders.length ? `<div class="detail-section">
+      <div class="detail-section-title">สัญญาเพิ่มเติม</div>
+      <div>${riders.map(r => `<span class="rider-badge">${esc(r)}</span>`).join('')}</div>
+    </div>` : ''}
+
+    ${p.beneficiaryName ? `<div class="detail-section">
+      <div class="detail-section-title">ผู้รับผลประโยชน์</div>
+      <div class="info-row"><span class="info-key">ชื่อ</span><span class="info-val">${esc(p.beneficiaryName)}</span></div>
+      <div class="info-row"><span class="info-key">ความสัมพันธ์</span><span class="info-val">${esc(p.beneficiaryRel)}</span></div>
+      ${p.beneficiaryPhone ? `<div class="info-row"><span class="info-key">เบอร์โทร</span><span class="info-val">${esc(p.beneficiaryPhone)}</span></div>` : ''}
+      ${p.beneficiaryPct ? `<div class="info-row"><span class="info-key">สัดส่วน</span><span class="info-val">${p.beneficiaryPct}%</span></div>` : ''}
+    </div>` : ''}
+
+    ${p.note ? `<div class="detail-section">
+      <div class="detail-section-title">หมายเหตุ</div>
+      <p style="font-size:13.5px;color:var(--text-muted);line-height:1.6;">${esc(p.note)}</p>
+    </div>` : ''}
+
+    <div class="detail-section">
+      <div style="font-size:11px;color:var(--text-dim);">เพิ่มเมื่อ: ${formatDate(p.createdAt)}</div>
+    </div>`;
+
+  document.getElementById('detail-edit-btn').onclick = () => openEditModal(p.id);
+  document.getElementById('detail-del-btn').onclick = () => confirmDelete(p.id, p.name);
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('detail-overlay').style.display = 'block';
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('detail-overlay').style.display = 'none';
+  currentDetail = null;
+}
+
+// ===========================
+//  FORM MODAL
+// ===========================
+function openAddModal() {
+  document.getElementById('modal-title').textContent = 'เพิ่มกรมธรรม์ใหม่';
+  clearForm();
+  document.getElementById('form-overlay').classList.add('open');
+}
+
+function openEditModal(id) {
+  const p = policies.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-title').textContent = 'แก้ไขกรมธรรม์';
+  document.getElementById('edit-id').value = p.id;
+  document.getElementById('f-name').value = p.name || '';
+  document.getElementById('f-company').value = p.company || '';
+  document.getElementById('f-policyNo').value = p.policyNo || '';
+  document.getElementById('f-type').value = p.type || 'ชีวิต';
+  document.getElementById('f-startDate').value = p.startDate ? p.startDate.substring(0,10) : '';
+  document.getElementById('f-endDate').value = p.endDate ? p.endDate.substring(0,10) : '';
+  document.getElementById('f-premium').value = p.premium || '';
+  document.getElementById('f-frequency').value = p.frequency || 'รายปี';
+  document.getElementById('f-coverage').value = p.coverage || '';
+  document.getElementById('f-beneficiaryName').value = p.beneficiaryName || '';
+  document.getElementById('f-beneficiaryRel').value = p.beneficiaryRel || '';
+  document.getElementById('f-beneficiaryPhone').value = p.beneficiaryPhone || '';
+  document.getElementById('f-beneficiaryPct').value = p.beneficiaryPct || '';
+  document.getElementById('f-note').value = p.note || '';
+
+  riders = p.riders ? p.riders.split(',').map(r => r.trim()).filter(Boolean) : [];
+  renderRiders();
+  document.getElementById('form-overlay').classList.add('open');
+}
+
+function clearForm() {
+  ['edit-id','f-name','f-company','f-policyNo','f-startDate','f-endDate','f-premium',
+   'f-coverage','f-beneficiaryName','f-beneficiaryRel','f-beneficiaryPhone','f-beneficiaryPct','f-note']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('f-type').value = 'ชีวิต';
+  document.getElementById('f-frequency').value = 'รายปี';
+  riders = [];
+  renderRiders();
+}
+
+function closeFormModal(e) {
+  if (e && e.target !== document.getElementById('form-overlay')) return;
+  document.getElementById('form-overlay').classList.remove('open');
+}
+
+// ===========================
+//  RIDERS
+// ===========================
+function addRider() {
+  const input = document.getElementById('rider-input');
+  const val = input.value.trim();
+  if (!val) return;
+  riders.push(val);
+  input.value = '';
+  renderRiders();
+}
+
+function removeRider(i) {
+  riders.splice(i, 1);
+  renderRiders();
+}
+
+function renderRiders() {
+  document.getElementById('riders-list').innerHTML = riders.map((r, i) =>
+    `<div class="rider-item">
+      <span>${esc(r)}</span>
+      <span class="rider-remove" onclick="removeRider(${i})">✕</span>
+    </div>`
+  ).join('');
+}
+
+// ===========================
+//  CONFIRM DELETE
+// ===========================
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('confirm-msg').textContent = `กรมธรรม์ของ "${name}" จะถูกลบออกจากระบบถาวร`;
+  document.getElementById('confirm-overlay').classList.add('open');
+  document.getElementById('confirm-ok-btn').onclick = async () => {
+    closeConfirm();
+    await deletePolicy(pendingDeleteId);
   };
-
-  const editId = document.getElementById('editId').value;
-  if (editId) data.id = editId;
-
-  document.getElementById('saveBtn').textContent = 'กำลังบันทึก...';
-  document.getElementById('saveBtn').disabled = true;
-  try {
-    const res = await api({ action: editId ? 'update' : 'add', data: JSON.stringify(data) });
-    if (res.success) {
-      showToast(editId ? 'อัปเดตสำเร็จ' : 'เพิ่มกรมธรรม์สำเร็จ');
-      closeModal(); loadPolicies();
-    } else showToast('บันทึกไม่สำเร็จ: ' + res.error);
-  } catch(e) { showToast('เกิดข้อผิดพลาด'); }
-  document.getElementById('saveBtn').textContent = 'บันทึก';
-  document.getElementById('saveBtn').disabled = false;
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingDeleteId = null;
 }
 
-// init
-if (scriptUrl) {
-  document.getElementById('setupBanner').style.display = 'none';
-  document.getElementById('scriptUrl').value = scriptUrl;
-  loadPolicies();
+// ===========================
+//  PAGE NAV
+// ===========================
+function setPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard',
+    policies: 'กรมธรรม์ทั้งหมด',
+    expiring: 'ใกล้หมดอายุ (60 วัน)',
+    expired: 'หมดอายุแล้ว'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+  document.getElementById('table-title').textContent = titles[page] || page;
+
+  const statusFilter = document.getElementById('status-filter');
+  statusFilter.value = page === 'expiring' ? 'expiring' : page === 'expired' ? 'expired' : '';
+  renderTable();
+}
+
+// ===========================
+//  HELPERS
+// ===========================
+function statusBadge(status) {
+  const map = {
+    active: ['badge-active', '⬤ คุ้มครองอยู่'],
+    expiring: ['badge-expiring', '⚠ ใกล้หมดอายุ'],
+    expired: ['badge-expired', '✕ หมดอายุ'],
+  };
+  const [cls, label] = map[status] || ['badge-expired', '—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function formatNum(n) {
+  const num = parseFloat(n) || 0;
+  return num.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date)) return d;
+  return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===========================
+//  TOAST
+// ===========================
+function toast(msg, type = 'success') {
+  const icons = { success: '✅', error: '❌', warning: '⚠️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type] || '💬'}</span><span>${msg}</span>`;
+  const container = document.getElementById('toast-container');
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+    el.style.transition = 'all 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }, 3200);
 }
 </script>
 </body>
